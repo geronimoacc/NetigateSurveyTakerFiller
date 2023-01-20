@@ -133,6 +133,15 @@ def last_page(driver):
     else:
         return False
 
+
+def choose_random_language(driver):
+    language_box = driver.find_element('css selector','.row.survey-translator')
+    language_options = language_box.find_elements('class','lang-link-container')
+    number_of_options = len(language_options)
+    language_int = random.randint(0,number_of_options)
+    language_options[language_int].click()
+    return
+
 def answer_whole_survey(survey_url, free_text_csv):
     list_free_text = create_list_of_entrys_from_csv(free_text_csv)
     webdriver = create_webdriver()
