@@ -118,6 +118,21 @@ def answer_question(question_class,question,driver,list_free_text): #Answers the
         answer_text_question(question, list_free_text)
     return
 
+def go_to_next_page(driver):
+    next_button = driver.find_element('id','nextQuestion')
+    next_button.click()
+    time.sleep(2)
+    return
+
+
+def next_page_end(driver):
+    next_button = driver.find_element('id','nextQuestion')
+    button_class = question.get_attribute('class')
+    if 'finnishSurvey' in button_class:
+        return True
+    else
+        return False
+
 
 list_free_text = create_list_of_entrys_from_csv('freitext_antworten.csv')
 webdriver = create_webdriver()
