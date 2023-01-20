@@ -5,6 +5,7 @@ import random
 from tqdm import tqdm
 from selenium.webdriver.common.keys import Keys
 from selenium.webdriver.chrome.options import Options
+from selenium.common.exceptions import NoSuchElementException
 from selenium.webdriver.common.by import By
 from selenium.webdriver.support.ui import Select
 from selenium.webdriver.common.action_chains import ActionChains
@@ -103,6 +104,15 @@ def answer_text_question(question, list_free_text):
     return
 
 
+def answer_date_picker_textfield(question):
+    day = str(random.randint(0,30))
+    month = str(random.randint(1,12))
+    year = str(random.randint(1950,1994))
+    date = day+"."+month+"."+year
+    question.find_element('css selector', '.netigatetexbox.form-control').send_keys(date)
+    return
+
+
 def answer_question(question_class,question,driver,list_free_text): #Answers the given question and executes the correct answer function
     button_question_types = ['netigateRadiobutton','netigateCheckboxes','netigateStarRating','npscontainer']
     for i in button_question_types:
@@ -115,6 +125,10 @@ def answer_question(question_class,question,driver,list_free_text): #Answers the
     elif 'netigateSlider' in question_class:
         answer_slider_question(question,driver)
     elif 'netigateTextbox' in question_class:
+        answer_text_question(question, list_free_text)
+    elif 'netigateTextbox date-picker' in question_class:
+        answer_date_picker_textfield(question)
+    elif 'netigateTextArea' in question_class:
         answer_text_question(question, list_free_text)
     return
 
@@ -136,18 +150,28 @@ def last_page(driver):
 
 def choose_random_language(driver):
     language_box = driver.find_element('css selector','.row.survey-translator')
-    language_options = language_box.find_elements('class','lang-link-container')
+    language_options = language_box.find_elements('class name','lang-link-container')
     number_of_options = len(language_options)
     language_int = random.randint(0,number_of_options)
     language_options[language_int].click()
     return
 
+
+def check_for_language_selector(driver):
+    try:
+        driver.find_element('css selector','.row.survey-translator')
+    except NoSuchElementException:
+        return False
+    return True
+
+
 def answer_whole_survey(survey_url, free_text_csv):
     list_free_text = create_list_of_entrys_from_csv(free_text_csv)
     webdriver = create_webdriver()
     netigate_go_to_survey_page(survey_url,webdriver)
+    if check_for_language_selector(webdriver) == True:
+        choose_random_language(webdriver)
     while last_page(webdriver)==False:
-        print(last_page(webdriver))
         list_of_questions = get_list_of_questions(webdriver)
         time.sleep(2)
         for i in list_of_questions:
@@ -156,7 +180,6 @@ def answer_whole_survey(survey_url, free_text_csv):
             time.sleep(3)
         go_to_next_page(webdriver)
     else:
-        print(last_page(webdriver))
         list_of_questions = get_list_of_questions(webdriver)
         time.sleep(3)
         for i in list_of_questions:
@@ -168,4 +191,4 @@ def answer_whole_survey(survey_url, free_text_csv):
         close_webdriver(webdriver)
     return
 
-answer_whole_survey('https://www.netigate.se/ra/s.aspx?s=1121247X367409907X22438','freitext_antworten.csv')
+answer_whole_survey('https://www.netigate.se/ra/s.aspx?s=1111760X367577705X21973','freitext_antworten.csv')
