@@ -125,24 +125,38 @@ def go_to_next_page(driver):
     return
 
 
-def next_page_end(driver):
+def last_page(driver):
     next_button = driver.find_element('id','nextQuestion')
-    button_class = question.get_attribute('class')
+    button_class = next_button.get_attribute('class')
     if 'finnishSurvey' in button_class:
         return True
-    else
+    else:
         return False
 
+def answer_whole_survey(survey_url, free_text_csv):
+    list_free_text = create_list_of_entrys_from_csv(free_text_csv)
+    webdriver = create_webdriver()
+    netigate_go_to_survey_page(survey_url,webdriver)
+    while last_page(webdriver)==False:
+        print(last_page(webdriver))
+        list_of_questions = get_list_of_questions(webdriver)
+        time.sleep(2)
+        for i in list_of_questions:
+            question_class = get_question_class(i)
+            answer_question(question_class,i,webdriver,list_free_text)
+            time.sleep(3)
+        go_to_next_page(webdriver)
+    else:
+        print(last_page(webdriver))
+        list_of_questions = get_list_of_questions(webdriver)
+        time.sleep(3)
+        for i in list_of_questions:
+            question_class = get_question_class(i)
+            answer_question(question_class,i,webdriver,list_free_text)
+            time.sleep(3)
+        go_to_next_page(webdriver)
+        time.sleep(3)
+        close_webdriver(webdriver)
+    return
 
-list_free_text = create_list_of_entrys_from_csv('freitext_antworten.csv')
-webdriver = create_webdriver()
-netigate_go_to_survey_page('https://www.netigate.se/ra/s.aspx?s=1121247X367409907X22438',webdriver)
-list_of_questions = get_list_of_questions(webdriver)
-
-for i in list_of_questions:
-    question_class = get_question_class(i)
-    answer_question(question_class,i,webdriver,list_free_text)
-    time.sleep(3)
-
-
-close_webdriver(webdriver)
+answer_whole_survey('https://www.netigate.se/ra/s.aspx?s=1121247X367409907X22438','freitext_antworten.csv')
