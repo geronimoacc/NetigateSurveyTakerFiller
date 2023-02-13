@@ -66,8 +66,7 @@ def answer_button_questions(question, webdriver): #for radio-button, check-box
     actions = ActionChains(webdriver)
     question_form = question.find_element('class name','form-group')
     list_of_buttons = question_form.find_elements('class name','form-check')
-    #button_integer = random.randint(0,len(list_of_buttons)-1)
-    button_integer = int(len(list_of_buttons)-1)
+    button_integer = random.randint(0,len(list_of_buttons)-1)
     element = list_of_buttons[button_integer]
     try:
         actions.move_to_element(element).perform()
@@ -113,7 +112,7 @@ def answer_slider_question(question,driver):
 
 
 def answer_text_field_question(question, list_free_text):
-    form_field =  question.find_element('css selector','.netigatetextbox.form-control')
+    form_field =  question.find_element('css selector','.netigatetexbox.form-control')
     if 'sum' in form_field.get_attribute('class'):
         answer_date_picker_textfield(question)
     else:
