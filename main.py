@@ -6,6 +6,7 @@ from tqdm import tqdm
 from selenium.webdriver.common.keys import Keys
 from selenium.webdriver.chrome.options import Options
 from selenium.common.exceptions import NoSuchElementException
+from selenium.common.exceptions import ElementNotInteractableException
 from selenium.webdriver.common.by import By
 from selenium.webdriver.support.ui import Select
 from selenium.webdriver.common.action_chains import ActionChains
@@ -61,10 +62,15 @@ def get_question_class(question): #checks the question type and returns it
 
 
 def answer_button_questions(question): #for radio-button, check-box
+    actions = ActionChains(webdriver)
     question_form = question.find_element('class name','form-group')
     list_of_buttons = question_form.find_elements('class name','form-check')
     button_integer = random.randint(0,len(list_of_buttons)-1)
-    list_of_buttons[button_integer].click()
+    element = list_of_buttons[button_integer]
+    print(button_integer)
+    print(len(list_of_buttons))
+    actions.move_to_element(element).perform()
+    element.click()
     return
 
 
@@ -75,7 +81,7 @@ def answer_matrix_question(question):
     for x in range (0, number_of_boxes):
         box = question.find_element('css selector','.netigate_slide.slide_active')
         click_on_random_button_in_box(box)
-        time.sleep(2)
+        time.sleep(1)
     return
 
 
@@ -98,10 +104,21 @@ def answer_slider_question(question,driver):
     return
 
 
-def answer_text_question(question, list_free_text):
-    free_text = list_free_text[random.randint(0, len(list_free_text))]
-    question.find_element('css selector', '.netigatetexbox.form-control').send_keys(free_text)
+def answer_text_field_question(question, list_free_text):
+    form_field =  question.find_element('css selector','.netigatetextbox.form-control')
+    if 'sum' in form_field.get_attribute('class'):
+        answer_date_picker_textfield(question)
+    else:
+        free_text = list_free_text[random.randint(0, len(list_free_text)-1)]
+        question.find_element('css selector', '.netigatetexbox.form-control').send_keys(free_text)
     return
+
+
+def answer_text_area_question(question, list_free_text):
+    free_text = list_free_text[random.randint(0, len(list_free_text)-1)]
+    question.find_element('css selector', '.netigatetextarea.form-control').send_keys(free_text)
+    return
+
 
 
 def answer_date_picker_textfield(question):
@@ -125,18 +142,20 @@ def answer_question(question_class,question,driver,list_free_text): #Answers the
     elif 'netigateSlider' in question_class:
         answer_slider_question(question,driver)
     elif 'netigateTextbox' in question_class:
-        answer_text_question(question, list_free_text)
-    elif 'netigateTextbox date-picker' in question_class:
-        answer_date_picker_textfield(question)
+        answer_text_field_question(question, list_free_text)
     elif 'netigateTextArea' in question_class:
-        answer_text_question(question, list_free_text)
+        answer_text_area_question(question, list_free_text)
     return
 
 def go_to_next_page(driver):
-    next_button = driver.find_element('id','nextQuestion')
-    next_button.click()
-    time.sleep(2)
-    return
+    try:
+        next_button = driver.find_element('id', 'nextQuestion')
+        next_button.click()
+        time.sleep(1)
+        return
+    except ElementNotInteractableException:
+        driver.close()
+        return
 
 
 def last_page(driver):
@@ -151,7 +170,7 @@ def last_page(driver):
 def choose_random_language(driver):
     language_box = driver.find_element('css selector','.row.survey-translator')
     language_options = language_box.find_elements('class name','lang-link-container')
-    number_of_options = len(language_options)
+    number_of_options = len(language_options)-1
     language_int = random.randint(0,number_of_options)
     language_options[language_int].click()
     return
@@ -164,6 +183,16 @@ def check_for_language_selector(driver):
         return False
     return True
 
+def answer_questions_on_page(driver, free_text_answers):
+    list_of_questions = get_list_of_questions(driver)
+    time.sleep(1)
+    for i in list_of_questions:
+        question_class = get_question_class(i)
+        answer_question(question_class, i, driver, free_text_answers)
+        time.sleep(1)
+    go_to_next_page(driver)
+    return
+
 
 def answer_whole_survey(survey_url, free_text_csv):
     list_free_text = create_list_of_entrys_from_csv(free_text_csv)
@@ -172,23 +201,11 @@ def answer_whole_survey(survey_url, free_text_csv):
     if check_for_language_selector(webdriver) == True:
         choose_random_language(webdriver)
     while last_page(webdriver)==False:
-        list_of_questions = get_list_of_questions(webdriver)
-        time.sleep(2)
-        for i in list_of_questions:
-            question_class = get_question_class(i)
-            answer_question(question_class,i,webdriver,list_free_text)
-            time.sleep(3)
-        go_to_next_page(webdriver)
+        answer_questions_on_page(webdriver,list_free_text)
     else:
-        list_of_questions = get_list_of_questions(webdriver)
-        time.sleep(3)
-        for i in list_of_questions:
-            question_class = get_question_class(i)
-            answer_question(question_class,i,webdriver,list_free_text)
-            time.sleep(3)
-        go_to_next_page(webdriver)
-        time.sleep(3)
-        close_webdriver(webdriver)
+        answer_questions_on_page(webdriver,list_free_text)
     return
 
-answer_whole_survey('https://www.netigate.se/ra/s.aspx?s=1111760X367577705X21973','freitext_antworten.csv')
+
+for i in range (0,10):
+    answer_whole_survey('https://www.netigate.se/ra/s.aspx?s=1111760X367577705X21973','freitext_antworten.csv')
