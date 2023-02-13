@@ -214,5 +214,10 @@ def answer_whole_survey(survey_url, free_text_csv):
     return
 
 
-for i in range (0,10):
-    answer_whole_survey('https://www.netigate.se/ra/s.aspx?s=1111760X367577705X21973&l=0','freitext_antworten.csv')
+def main(number_of_tests, survey_url, free_text_answers):
+    for i in range (0,number_of_tests):
+        answer_whole_survey(survey_url,free_text_answers)
+    return
+
+'freitext_antworten.csv'
+'https://www.netigate.se/ra/s.aspx?s=1111760X367577705X21973&l=0'
