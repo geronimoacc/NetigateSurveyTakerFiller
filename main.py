@@ -7,6 +7,7 @@ from selenium.webdriver.common.keys import Keys
 from selenium.webdriver.chrome.options import Options
 from selenium.common.exceptions import NoSuchElementException
 from selenium.common.exceptions import ElementNotInteractableException
+from selenium.common.exceptions import ElementClickInterceptedException
 from selenium.webdriver.common.by import By
 from selenium.webdriver.support.ui import Select
 from selenium.webdriver.common.action_chains import ActionChains
@@ -61,16 +62,23 @@ def get_question_class(question): #checks the question type and returns it
     return question_class
 
 
-def answer_button_questions(question): #for radio-button, check-box
+def answer_button_questions(question, webdriver): #for radio-button, check-box
     actions = ActionChains(webdriver)
     question_form = question.find_element('class name','form-group')
     list_of_buttons = question_form.find_elements('class name','form-check')
-    button_integer = random.randint(0,len(list_of_buttons)-1)
+    #button_integer = random.randint(0,len(list_of_buttons)-1)
+    button_integer = int(len(list_of_buttons)-1)
     element = list_of_buttons[button_integer]
+    try:
+        actions.move_to_element(element).perform()
+        element.click()
+        return
+    except ElementClickInterceptedException:
+        webdriver.execute_script("arguments[0].scrollIntoView();", element)
+        element.click()
+        return
     print(button_integer)
     print(len(list_of_buttons))
-    actions.move_to_element(element).perform()
-    element.click()
     return
 
 
@@ -134,7 +142,7 @@ def answer_question(question_class,question,driver,list_free_text): #Answers the
     button_question_types = ['netigateRadiobutton','netigateCheckboxes','netigateStarRating','npscontainer']
     for i in button_question_types:
         if i in question_class:
-            answer_button_questions(question)
+            answer_button_questions(question, driver)
     if 'netigateMatrix' in question_class:
         answer_matrix_question(question)
     elif 'netigateDropdown' in question_class:
@@ -208,4 +216,4 @@ def answer_whole_survey(survey_url, free_text_csv):
 
 
 for i in range (0,10):
-    answer_whole_survey('https://www.netigate.se/ra/s.aspx?s=1111760X367577705X21973','freitext_antworten.csv')
+    answer_whole_survey('https://www.netigate.se/ra/s.aspx?s=1111760X367577705X21973&l=0','freitext_antworten.csv')
