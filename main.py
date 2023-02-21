@@ -76,8 +76,6 @@ def answer_button_questions(question, webdriver): #for radio-button, check-box
         webdriver.execute_script("arguments[0].scrollIntoView();", element)
         element.click()
         return
-    print(button_integer)
-    print(len(list_of_buttons))
     return
 
 
@@ -138,7 +136,7 @@ def answer_date_picker_textfield(question):
 
 
 def answer_question(question_class,question,driver,list_free_text): #Answers the given question and executes the correct answer function
-    button_question_types = ['netigateRadiobutton','netigateCheckboxes','netigateStarRating','npscontainer']
+    button_question_types = ['netigateRadiobutton','netigateCheckboxes','netigateStarRating','npscontainer','radiobuttons']
     for i in button_question_types:
         if i in question_class:
             answer_button_questions(question, driver)
@@ -215,9 +213,9 @@ def answer_whole_survey(survey_url, free_text_csv):
 
 
 def main(number_of_tests, survey_url, free_text_answers):
-    for i in range (0,number_of_tests):
+    for i in tqdm(range (0,number_of_tests)):
         answer_whole_survey(survey_url,free_text_answers)
     return
 
 if __name__ =="__main__":
-    main(10,'https://www.netigate.se/ra/s.aspx?s=1111760X367577705X21973','freitext_antworten.csv')
+    main(100,'https://www.netigate.se/a/s.aspx?s=1129391X372320068X31106','freetext_english.csv')
