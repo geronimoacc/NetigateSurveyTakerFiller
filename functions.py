@@ -242,5 +242,5 @@ def main(number_of_tests, survey_url, free_text_answers):
         answer_whole_survey(survey_url,free_text_answers)
     return
 
-if __name__ =="__main__":
-    main(100,'https://www.netigate.se/a/s.aspx?s=1130051X372713211X28429','freetext_english.csv')
+#if __name__ =="__main__":
+#    main(100,'https://www.netigate.se/a/s.aspx?s=1130051X372713211X28429','freetext_english.csv')

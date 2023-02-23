@@ -1,0 +1,34 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Netigate Survey Taker</title>
+    <link rel="stylesheet" type= "text/css" href="{{ url_for('static',filename='styles/mainform.css') }}">
+</head>
+<body>
+    <div class="login-box">
+      <h2>Survey Taker submission form</h2>
+      <form method="POST">
+        <div class="user-box">
+            <input type="url" name="survey_url" required="">
+            <label>Survey-Url</label>
+        </div>
+        <div class="user-box">
+            <input type="number" name="number_of_runs" required="">
+            <label>Number of runs</label>
+        </div>
+        <div class="user-box">
+            <input type="file" name="text_file">
+            <label>Text answer file</label>
+        </div>
+        <a href="#">
+            <input type="submit" required="">
+            <span></span>
+            <span></span>
+            <span></span>
+            <span></span>
+        </a>
+      </form>
+    </div>
+</body>
+</html>
