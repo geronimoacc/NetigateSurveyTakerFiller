@@ -37,11 +37,20 @@ def close_webdriver(driver):
     return
 
 
-def click_on_random_button_in_box(box):
+def click_on_random_button_in_box(box, webdriver):
+    actions = ActionChains(webdriver)
     list_of_buttons = box.find_elements('class name', 'form-check')
     button_integer = random.randint(0, len(list_of_buttons)-1)
-    list_of_buttons[button_integer].click()
-    return
+    element = list_of_buttons[button_integer]
+    try:
+        actions.move_to_element(element).perform()
+        element.click()
+        return
+    except ElementClickInterceptedException:
+        webdriver.execute_script("arguments[0].scrollIntoView()", element)
+        time.sleep(0.5)
+        element.click()
+        return
 
 
 def create_list_of_entrys_from_csv(input_file):
@@ -67,25 +76,31 @@ def answer_button_questions(question, webdriver): #for radio-button, check-box
     question_form = question.find_element('class name','form-group')
     list_of_buttons = question_form.find_elements('class name','form-check')
     button_integer = random.randint(0,len(list_of_buttons)-1)
+    print(button_integer)
     element = list_of_buttons[button_integer]
     try:
         actions.move_to_element(element).perform()
         element.click()
         return
     except ElementClickInterceptedException:
-        webdriver.execute_script("arguments[0].scrollIntoView();", element)
-        element.click()
-        return
-    return
+        try:
+            webdriver.execute_script("arguments[0].scrollIntoView()", element)
+            time.sleep(1)
+            element.click()
+            return
+        except ElementClickInterceptedException:
+            actions.move_to_element(element).perform()
+            webdriver.execute_script("arguments[0].click()", element)
+            return
 
 
-def answer_matrix_question(question):
+def answer_matrix_question(question, driver):
     dots = question.find_element('class name','dots')
     list_of_dots = dots.find_elements('xpath','./*')
     number_of_boxes = sum(1 for i in list_of_dots if 'dot' in str(i.get_attribute('class')))
     for x in range (0, number_of_boxes):
         box = question.find_element('css selector','.netigate_slide.slide_active')
-        click_on_random_button_in_box(box)
+        click_on_random_button_in_box(box, driver)
         time.sleep(1)
     return
 
@@ -111,8 +126,10 @@ def answer_slider_question(question,driver):
 
 def answer_text_field_question(question, list_free_text):
     form_field =  question.find_element('css selector','.netigatetexbox.form-control')
-    if 'sum' in form_field.get_attribute('class'):
+    if 'datepicker' in form_field.get_attribute('class'):
         answer_date_picker_textfield(question)
+    elif 'sum' in form_field.get_attribute('class'):
+        answer_date_numeric_textfield(question)
     else:
         free_text = list_free_text[random.randint(0, len(list_free_text)-1)]
         question.find_element('css selector', '.netigatetexbox.form-control').send_keys(free_text)
@@ -135,13 +152,21 @@ def answer_date_picker_textfield(question):
     return
 
 
+def answer_date_numeric_textfield(question):
+    number = str(random.randint(18,68))
+    question.find_element('css selector', '.netigatetexbox.form-control').send_keys(number)
+    return
+
+
 def answer_question(question_class,question,driver,list_free_text): #Answers the given question and executes the correct answer function
-    button_question_types = ['netigateRadiobutton','netigateCheckboxes','netigateStarRating','npscontainer','radiobuttons']
+    actions = ActionChains(driver)
+    actions.move_to_element(question).perform()
+    button_question_types = ['netigateRadiobutton','netigateCheckboxes','netigateStarRating','npscontainer','radiobuttons','checkboxes']
     for i in button_question_types:
         if i in question_class:
             answer_button_questions(question, driver)
     if 'netigateMatrix' in question_class:
-        answer_matrix_question(question)
+        answer_matrix_question(question, driver)
     elif 'netigateDropdown' in question_class:
         answer_dropdown_question(question)
     elif 'netigateSlider' in question_class:
@@ -218,4 +243,4 @@ def main(number_of_tests, survey_url, free_text_answers):
     return
 
 if __name__ =="__main__":
-    main(100,'https://www.netigate.se/a/s.aspx?s=1129391X372320068X31106','freetext_english.csv')
+    main(100,'https://www.netigate.se/a/s.aspx?s=1130051X372713211X28429','freetext_english.csv')
