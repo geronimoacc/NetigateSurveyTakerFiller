@@ -76,7 +76,6 @@ def answer_button_questions(question, webdriver): #for radio-button, check-box
     question_form = question.find_element('class name','form-group')
     list_of_buttons = question_form.find_elements('class name','form-check')
     button_integer = random.randint(0,len(list_of_buttons)-1)
-    print(button_integer)
     element = list_of_buttons[button_integer]
     try:
         actions.move_to_element(element).perform()
